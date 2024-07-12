@@ -22,6 +22,6 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 NeedsCompilation: no
-Packaged: 2024-06-06 00:18:22 UTC; matutosi
+Packaged: 2024-07-12 03:07:13 UTC; matutosi
 Author: Toshikazu Matsumura [aut, cre]
 Maintainer: Toshikazu Matsumura <matutosi@gmail.com>
