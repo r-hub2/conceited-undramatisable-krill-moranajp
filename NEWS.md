@@ -1,13 +1,11 @@
 # moranajp release news
 
-# moranajp 0.9.6.9000
+# moranajp 0.9.7
 
-* Todo in 1.0.0
-    * Deprecate `mecab()` and `mecab_all()`
-    * Organise and tidy add_id() and related functions
-
-* Todo in 0.9.7
-    * Can use structure analysis and related functions
+* 2024-07-12
+* Update `moranajp()` according to web-chamame update
+* Use pkgdown
+* Change pipe `%>%` into `|>`
 
 # moranajp 0.9.6
 
