@@ -80,7 +80,6 @@ gg (ggplot2 object of bigram network plot).
 Draw bigram network using morphological analysis data.
 }
 \examples{
-library(magrittr)
 data(synonym)
 synonym <- unescape_utf(synonym)
 

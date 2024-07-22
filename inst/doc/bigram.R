@@ -6,7 +6,6 @@ knitr::opts_chunk$set(
 
 ## ----setup--------------------------------------------------------------------
 library(moranajp)
-library(magrittr)
 
 ## ----eval = FALSE, fig.width=6, fig.height=6----------------------------------
 #  data(synonym)

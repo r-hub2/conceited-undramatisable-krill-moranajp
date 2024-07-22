@@ -14,10 +14,9 @@
 #'                         are given, both of them will be used as synonym.
 #' @param add_depend       A logical. Available for ginza
 #' @param ...              Extra arguments to internal functions.
-#' @return A dataframe.
+#' @return A data.frame.
 #' @name clean_up
 #' @examples
-#' library(magrittr)
 #' data(neko_mecab)
 #' data(neko_ginza)
 #' data(review_sudachi_c)
@@ -119,15 +118,15 @@ delete_stop_words <- function(df,
         utils::data(stop_words, envir = environment())
         stop_words |>
           purrr::map_dfr(unescape_utf) |>
-          magrittr::set_colnames(term)
+          `colnames<-`(term)
     } else {
         tibble::tibble()
     }
   stop_words <- 
       tibble::tibble(add_stop_words) |>
-          magrittr::set_colnames(term) |>
+          `colnames<-`(term) |>
           dplyr::bind_rows(stop_words)
-  df <- dplyr::anti_join(df, stop_words)
+  df <- dplyr::anti_join(df, stop_words, by = unescape_utf("\\u539f\\u5f62"))
   return(df)
 }
 
@@ -138,7 +137,6 @@ replace_words <- function(df,
                           synonym_from = "",
                           synonym_to = "",
                           ...){ # `...' will be omitted
-  #   if(is.null(synonym_df) & synonym_from == "" & synonym_to   == "" ){ return(df) }
   if(nrow(synonym_df) == 0 & synonym_from == "" & synonym_to   == "" ){ return(df) }
   term <- term_lemma(df)
   rep_words        <- synonym_to
@@ -189,6 +187,7 @@ term_pos_1 <- function(df){
 #' @param combi  A string (combi_words()) or string vector (combine_words()) to combine words.
 #' @param sep    A string of separator of words
 #' @param x      A pair of string joining with "-"
+#' @return A data.frame with combined words.
 #' 
 #' @examples
 #' x <- letters[1:10]

@@ -34,7 +34,7 @@ remove_linebreaks(tbl, text_col)
 
 separate_cols_ginza(tbl, col_lang)
 
-make_input(tbl, text_col, iconv, brk = "BPOMORANAJP ")
+make_input(tbl, text_col, iconv, brk = "BPMJP ")
 
 make_cmd(method, option = "")
 
@@ -86,7 +86,7 @@ iconv is also used to convert input text before running MeCab.
 \item{brk}{A string of break point}
 }
 \value{
-A tibble.   Output of 'MeCab' and added column "text_id".
+A tibble.   Output of morphological analysis and added column "text_id".
 
 A string
 
@@ -111,12 +111,19 @@ Using 'MeCab' for morphological analysis.
 Keep other colnames in dataframe.
 }
 \examples{
-\dontrun{
-  library(magrittr)
+\donttest{
+  # sample data of Japanese sentences
   data(neko)
   neko <-
       neko |>
       unescape_utf()
+  # chamame
+  neko |>
+    moranajp_all(method = "chamame") |>
+        print(n=100)
+}
+\dontrun{
+  # Need to install 'mecab', 'ginza', or 'sudachi' in local PC
 
   # mecab
   bin_dir <- "d:/pf/mecab/bin"
@@ -137,6 +144,6 @@ Keep other colnames in dataframe.
     moranajp_all(text_col = "text", bin_dir = bin_dir,
                  method = "sudachi_a", iconv = iconv) |>
         print(n=100)
-
 }
+
 }

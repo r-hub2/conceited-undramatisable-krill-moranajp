@@ -55,13 +55,12 @@ When synonym_df and synonym pairs (synonym_from and synonym_to)
 are given, both of them will be used as synonym.}
 }
 \value{
-A dataframe.
+A data.frame.
 }
 \description{
 Clean up result of morphological analyzed data frame
 }
 \examples{
-library(magrittr)
 data(neko_mecab)
 data(neko_ginza)
 data(review_sudachi_c)

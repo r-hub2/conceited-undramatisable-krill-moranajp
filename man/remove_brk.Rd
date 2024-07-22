@@ -5,7 +5,7 @@
 \title{Remove break point and other unused rows from the result of
 morphological analysis}
 \usage{
-remove_brk(tbl, method, brk = "BPOMORANAJP")
+remove_brk(tbl, method, brk = "BPMJP")
 }
 \arguments{
 \item{tbl}{A tibble or data.frame.}
@@ -18,6 +18,9 @@ See https://github.com/WorksApplications/Sudachi for detail.
 "chamame" use https://chamame.ninjal.ac.jp/ and rvest.}
 
 \item{brk}{A string of break point}
+}
+\value{
+A data.frame.
 }
 \description{
 Internal function for moranajp_all().

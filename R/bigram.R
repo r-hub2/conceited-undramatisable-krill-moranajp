@@ -24,7 +24,6 @@
 #' @return  A list including df (input), bigram, freq (frequency) and 
 #'          gg (ggplot2 object of bigram network plot).
 #' @examples
-#' library(magrittr)
 #' data(synonym)
 #' synonym <- unescape_utf(synonym)
 #' 
@@ -171,7 +170,9 @@ bigram_depend <- function(df, group = "sentence"){
 
 #' @rdname draw_bigram_network
 #' @export
-bigram_network <- function(bigram, rand_seed = 12, threshold = 100, ...){  # `...' will be omitted
+bigram_network <- function(bigram, 
+                           rand_seed = 12, 
+                           threshold = 100, ...){ # `...' will be omitted
   set.seed(rand_seed)
   freq_thresh <- dplyr::slice(bigram, threshold)[["freq"]]
   if(length(freq_thresh) == 0){ freq_thresh <- 1 }
@@ -193,7 +194,9 @@ word_freq <- function(df, big_net, ...){
     df |>
     dplyr::group_by(.data[[term]]) |>
     dplyr::tally(name = freq)
-  dplyr::left_join(tibble::tibble({{term}} := name), df) |>
+  dplyr::left_join(
+    tibble::tibble({{term}} := name), df, 
+    by = unescape_utf("\\u539f\\u5f62")) |>
     `[[`(_, freq) |>
     log() |>
     round(0) * 2
@@ -226,10 +229,9 @@ bigram_network_plot <- function(big_net, freq,
                            start_cap = cap_size, 
                            end_cap   = cap_size) +
     ggraph::geom_node_point(color = circle_col, 
-                            # default (5) means 5 * 0.2 = 1
+                                  # freq *      5      * 0.2
                             size  = freq * circle_size * 0.2) +  
-  #     ggraph::geom_node_text(ggplot2::aes(label = .data[["name"]]), 
-    ggraph::geom_node_text(ggplot2::aes(label = iconv(.data[["name"]], from = "UTF-8", to = "ASCII//TRANSLIT")), 
+    ggraph::geom_node_text(ggplot2::aes(label = .data[["name"]]), 
                            vjust  = 1, 
                            hjust  = 1, 
                            size   = text_size, 

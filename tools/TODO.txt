@@ -1,2 +1,0 @@
-* TODO in 1.0.0
-    * Deprecate `mecab()` and `mecab_all()`

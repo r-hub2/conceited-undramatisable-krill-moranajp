@@ -22,15 +22,22 @@
 #'                     iconv is also used to convert input text before running MeCab.
 #'                     "CP932_UTF-8": iconv(input, from =  "UTF-8", to = "Shift-JIS")
 #' @param col_lang     A text. "jp" or "en"
-#' @return A tibble.   Output of 'MeCab' and added column "text_id".
+#' @return A tibble.   Output of morphological analysis and added column "text_id".
 #' @examples
-#' \dontrun{
-#'   library(magrittr)
+#' \donttest{
+#'   # sample data of Japanese sentences
 #'   data(neko)
 #'   neko <-
 #'       neko |>
 #'       unescape_utf()
-#'
+#'   # chamame
+#'   neko |>
+#'     moranajp_all(method = "chamame") |>
+#'         print(n=100)
+#' }
+#' \dontrun{
+#'   # Need to install 'mecab', 'ginza', or 'sudachi' in local PC
+#' 
 #'   # mecab
 #'   bin_dir <- "d:/pf/mecab/bin"
 #'   iconv <- "CP932_UTF-8"
@@ -50,14 +57,14 @@
 #'     moranajp_all(text_col = "text", bin_dir = bin_dir,
 #'                  method = "sudachi_a", iconv = iconv) |>
 #'         print(n=100)
-#'
 #' }
+#' 
 #' @export
 moranajp_all <- function(tbl, bin_dir = "", method = "mecab",
              text_col = "text", option = "", iconv = "",
              col_lang = "jp"){
   # text_col = "text"; option = ""; bin_dir = "d:/pf/mecab/bin/"; iconv = "CP932_UTF-8"; method = "mecab"; tbl = review |> unescape_utf(); col_lang = "jp"
-  print(paste0("Analaysing by ", method, ". Please wait."))
+  message(paste0("Analaysing by ", method, ". Please wait."))
   text_id    <- "text_id"
   tmp_group  <- "tmp_group"  # Use temporary
   str_length <- "str_length" # Use temporary
@@ -180,7 +187,7 @@ separate_cols_ginza <- function(tbl, col_lang){
 #' @return A string
 #' @export
 make_input <- function(tbl, text_col, iconv,
-  brk = "BPOMORANAJP "){ # Break Point Of MORANAJP: need space to split with English words
+  brk = "BPMJP "){ # Break Point Of MoranaJP: need space to split with English words
   input <-
     tbl |>
     dplyr::select(.data[[text_col]]) |>
@@ -324,13 +331,14 @@ out_cols <- function(){
 #' Add id column into result of morphological analysis
 #'
 #' Internal function for moranajp_all().
-#' Add `text_id` column when there is brk ("BPOMORANAJP").
-#'    "BPOMORANAJP": Break Point Of MORANAJP
+#' Add `text_id` column when there is brk ("BPMJP").
+#'    "BPMJP": Break Point Of MoranaJP
 #'
 #' @inheritParams moranajp_all
 #' @inheritParams make_input
+#' @return A data.frame with column "text_id".
 #' @export
-add_text_id <- function(tbl, method, brk = "BPOMORANAJP"){
+add_text_id <- function(tbl, method, brk = "BPMJP"){
   text_id <- "text_id"
   cnames  <- colnames(tbl)
   if (any(text_id %in% cnames)){
@@ -361,8 +369,9 @@ add_text_id <- function(tbl, method, brk = "BPOMORANAJP"){
 #'
 #' @inheritParams moranajp_all
 #' @inheritParams make_input
+#' @return A data.frame.
 #' @export
-remove_brk <- function(tbl, method, brk = "BPOMORANAJP"){
+remove_brk <- function(tbl, method, brk = "BPMJP"){
   cnames  <- colnames(tbl)
   col_no <- ifelse(method == "ginza", 2, 1)
   col <- cnames[col_no]
