@@ -27,15 +27,15 @@
 #' data(synonym)
 #' synonym <- unescape_utf(synonym)
 #' 
-#' data(neko_mecab)
-#' neko_mecab <- 
-#'   neko_mecab  |>
+#' data(review_mecab)
+#' review_mecab <- 
+#'   review_mecab  |>
 #'   unescape_utf() |>
 #'   add_sentence_no() |>
 #'   clean_up(use_common_data = TRUE, synonym_df = synonym)
 #' 
-#' bigram_neko <- 
-#'   neko_mecab |>
+#' bigram_review <- 
+#'   review_mecab |>
 #'   draw_bigram_network()
 #' 
 #' add_stop_words <- 

@@ -32,7 +32,7 @@
 #' neko_mecab |>
 #'   clean_up(use_common_data = TRUE, synonym_df = synonym)
 #' 
-#' neko_ginza |>
+#' review_ginza |>
 #'   unescape_utf() |>
 #'   add_sentence_no() |>
 #'   clean_up(add_depend = TRUE, use_common_data = TRUE, synonym_df = synonym)
@@ -102,7 +102,7 @@ add_depend_ginza <- function(df){
     df |>
     dplyr::mutate({{h_id}} := 
         stringr::str_c(.data[[s_id]], "_", .data[[head]])) |>
-    dplyr::left_join(depend)
+    dplyr::left_join(depend, by = unescape_utf("\\u4fc2\\u53d7\\u5143_id"))
   return(df)
 }
 
