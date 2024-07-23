@@ -53,7 +53,8 @@
 #'   draw_bigram_network()
 #' 
 #' data(review_ginza)
-#' review_ginza |>
+#' bigram_review_ginza <- 
+#'   review_ginza |>
 #'   unescape_utf() |>
 #'   add_sentence_no() |>
 #'   clean_up(add_depend = TRUE) |>
@@ -232,6 +233,8 @@ bigram_network_plot <- function(big_net, freq,
                                   # freq *      5      * 0.2
                             size  = freq * circle_size * 0.2) +  
     ggraph::geom_node_text(ggplot2::aes(label = .data[["name"]]), 
+  #     ggraph::geom_node_text(ggplot2::aes(label = .data[["name"]] |>
+  #                                         iconv(from = "UTF-8", to = "ASCII//TRANSLIT")), |>
                            vjust  = 1, 
                            hjust  = 1, 
                            size   = text_size, 
