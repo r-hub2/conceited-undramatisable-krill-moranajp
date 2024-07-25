@@ -100,14 +100,9 @@ moranajp_all <- function(tbl, bin_dir = "", method = "mecab",
 #' @rdname moranajp_all
 #' @export
 moranajp <- function(tbl, bin_dir, method, text_col, option = "", iconv = "", col_lang){
-  if(bin_dir != ""){
-    wd <- getwd()
-    on.exit(setwd(wd))
-    setwd(bin_dir)
-  }
   input <- make_input(tbl, text_col, iconv)
   command <- make_cmd(method, option = "")
-  output <- system(command, intern=TRUE, input = input)
+  output <- system(command, intern = TRUE, input = input)
   output <- iconv_x(output, iconv) # Convert Encoding
   out_cols <- switch(method,
     "mecab"     = out_cols_mecab(col_lang),

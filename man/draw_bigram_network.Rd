@@ -80,39 +80,16 @@ gg (ggplot2 object of bigram network plot).
 Draw bigram network using morphological analysis data.
 }
 \examples{
-data(synonym)
-synonym <- unescape_utf(synonym)
 
-data(neko_mecab)
-neko_mecab <- 
-  neko_mecab  |>
-  unescape_utf() |>
-  add_sentence_no() |>
-  clean_up(use_common_data = TRUE, synonym_df = synonym)
-
-bigram_neko <- 
-  neko_mecab |>
-  draw_bigram_network()
-
-add_stop_words <- 
-  c("\\\\u3042\\\\u308b", "\\\\u3059\\\\u308b", "\\\\u3066\\\\u308b", 
-    "\\\\u3044\\\\u308b","\\\\u306e", "\\\\u306a\\\\u308b", "\\\\u304a\\\\u308b", 
-    "\\\\u3093", "\\\\u308c\\\\u308b", "*") |> 
-   unescape_utf()
-
-data(review_chamame)
-bigram_review <- 
-  review_chamame |>
-  unescape_utf() |>
-  add_sentence_no() |>
-  clean_up(add_stop_words = add_stop_words) |>
-  draw_bigram_network()
-
-data(review_ginza)
-review_ginza |>
-  unescape_utf() |>
-  add_sentence_no() |>
-  clean_up(add_depend = TRUE) |>
-  draw_bigram_network(depend = TRUE)
+sentences <- 50
+len <- 30
+n <- sentences * len
+x <- letters
+prob <- (length(x):1) ^ 3
+df <- 
+  tibble::tibble(
+    lemma = sample(x = x, size = n, replace = TRUE, prob = prob),
+    sentence = rep(seq(sentences), each = len))
+draw_bigram_network(df)
 
 }

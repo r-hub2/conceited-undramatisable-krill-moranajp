@@ -76,7 +76,7 @@ neko_mecab <-
 neko_mecab |>
   clean_up(use_common_data = TRUE, synonym_df = synonym)
 
-neko_ginza |>
+review_ginza |>
   unescape_utf() |>
   add_sentence_no() |>
   clean_up(add_depend = TRUE, use_common_data = TRUE, synonym_df = synonym)

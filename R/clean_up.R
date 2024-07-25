@@ -126,7 +126,7 @@ delete_stop_words <- function(df,
       tibble::tibble(add_stop_words) |>
           `colnames<-`(term) |>
           dplyr::bind_rows(stop_words)
-  df <- dplyr::anti_join(df, stop_words, by = unescape_utf("\\u539f\\u5f62"))
+  df <- dplyr::anti_join(df, stop_words, by = term)
   return(df)
 }
 
