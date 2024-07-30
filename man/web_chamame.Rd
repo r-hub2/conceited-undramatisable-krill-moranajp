@@ -46,19 +46,4 @@ text <-
   unescape_utf()
 web_chamame(text)
 
-text <-
-  paste0("\\\\u3059",
-         paste0(rep("\\\\u3082",8),collapse=""),
-         "\\\\u306e\\\\u3046\\\\u3061") |>
-  unescape_utf()
-html <- rvest::read_html("https://chamame.ninjal.ac.jp/index.html")
-form <-
-  rvest::html_form(html)[[1]] |>
-  rvest::html_form_set(st = text) |>
-  html_radio_set("out-e" = "html")
-resp <- rvest::html_form_submit(form)
-rvest::read_html(resp) |>
-  rvest::html_table() |>
-  `[[`(_, 1)
-
 }

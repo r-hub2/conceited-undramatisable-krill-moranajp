@@ -36,7 +36,7 @@ separate_cols_ginza(tbl, col_lang)
 
 make_input(tbl, text_col, iconv, brk = "BPMJP ")
 
-make_cmd(method, option = "")
+make_cmd(method, bin_dir, option = "")
 
 make_cmd_mecab(option = "")
 
