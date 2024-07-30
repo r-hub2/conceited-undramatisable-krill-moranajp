@@ -20,5 +20,3 @@ test_that("text_id of moranajp matches text number", {
     skip_if(length(bin_dir) != 1)
         expect_equal(res$cols, res$text_id)
 })
-
-  

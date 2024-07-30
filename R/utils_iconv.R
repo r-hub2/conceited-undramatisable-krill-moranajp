@@ -34,7 +34,7 @@ escape_japanese <- function(x){
   escaped <- stringi::stri_escape_unicode(x)
   codes <- paste0('stringi::stri_unescape_unicode("', escaped, '")')
   for(code in codes){
-    cat(code, "\n")
+    message(code, "\n")
   }
 }
 

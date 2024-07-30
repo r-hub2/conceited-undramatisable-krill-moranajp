@@ -8,8 +8,8 @@ Description: Supports morphological analysis for Japanese by using
     'Sudachi' <https://github.com/WorksApplications/Sudachi>, 
     'Chamame' <https://chamame.ninjal.ac.jp/>, 
     or 'Ginza' <https://github.com/megagonlabs/ginza>.
-    Can input data.frame and obtain all results of 'MeCab' and row number of 
-    original data.frame as a text id. 
+    Can input a data.frame and obtain all results of 'MeCab' and the row
+    number of the original data.frame as a text id.
 License: MIT + file LICENSE
 Depends: R (>= 3.5.0)
 URL: https://github.com/matutosi/moranajp,
@@ -26,6 +26,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Language: en-US
 NeedsCompilation: no
-Packaged: 2024-07-25 18:44:31 UTC; matutosi
+Packaged: 2024-07-30 03:50:11 UTC; matutosi
 Author: Toshikazu Matsumura [aut, cre]
 Maintainer: Toshikazu Matsumura <matutosi@gmail.com>
