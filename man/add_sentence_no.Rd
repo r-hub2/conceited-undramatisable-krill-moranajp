@@ -4,12 +4,10 @@
 \alias{add_sentence_no}
 \title{Wrapper function for add_group() to add sentence id}
 \usage{
-add_sentence_no(df, s_id = "sentence")
+add_sentence_no(df)
 }
 \arguments{
 \item{df}{A dataframe}
-
-\item{s_id}{A string for sentence colame}
 }
 \value{
 A dataframe

@@ -5,7 +5,7 @@
 \title{Remove break point and other unused rows from the result of
 morphological analysis}
 \usage{
-remove_brk(tbl, method, brk = "BPMJP")
+remove_brk(tbl, method, brk = "BP")
 }
 \arguments{
 \item{tbl}{A tibble or data.frame.}

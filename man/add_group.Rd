@@ -34,8 +34,8 @@ Add group id column into result of morphological analysis
 }
 \examples{
 brk <- "EOS"
-tbl <- tibble::tibble(col=c(rep("a", 2), brk, rep("b", 3), brk, rep("c", 4), brk))
-add_group(tbl, col = "col")
-add_group(tbl, col = "col", end_with_brk = FALSE)
+tbl <- tibble::tibble(col_a = c(rep("a", 2), brk, rep("b", 3), brk, rep("c", 4), brk))
+add_group(tbl, col = "col_a", grp = "text_id")
+add_group(tbl, col = "col_a", end_with_brk = FALSE)
 
 }

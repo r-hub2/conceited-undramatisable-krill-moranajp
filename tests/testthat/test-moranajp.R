@@ -3,7 +3,6 @@ test_that("add_text_id() work", {
     tbl <-
       tibble::tibble(col=c(rep("a", times[1]), "EOS", rep("b", times[2]), "EOS", rep("c", times[3]), "EOS"))
     res <- c(rep(1, times[1]), rep(2, times[2] + 1), rep(3, times[3] + 1), 4)       # "+ 1": because of EOS
-      # add_text_id()
     expect_equal(add_text_id(tbl, method = "mecab", brk = "EOS")$text_id, res)
 })
 
@@ -19,4 +18,13 @@ test_that("text_id of moranajp matches text number", {
     }
     skip_if(length(bin_dir) != 1)
         expect_equal(res$cols, res$text_id)
+})
+
+test_that("web_chamame() fails gracefully when not available", {
+    # Not a web server: connection fails without using an internet resource
+    url <- "http://127.0.0.1:1/"
+    expect_message(html <- read_html_safely(url))
+    expect_null(html)
+    expect_message(res <- web_chamame(unescape_utf("\\u3059\\u3082\\u3082"), url = url))
+    expect_null(res)
 })

@@ -1,5 +1,27 @@
 # moranajp release news
 
+# moranajp 0.9.8
+
+* 2026-08-04
+* `web_chamame()` fails gracefully when web chamame is not available
+    * Shows a message and returns `NULL` instead of an error
+    * `moranajp_all(method = "chamame")` also returns `NULL`
+* Examples using web chamame are wrapped in `\dontrun{}`
+* Follow the 2025 update of web chamame
+    * Select the form fields by name, not by index
+      (web chamame added 8 fields, which shifted all the indices)
+    * Keep the new `dic_version` field:
+      without it, web chamame returns a server error for UniDic dictionaries
+    * Add `dic` argument to `web_chamame()` and `moranajp_all()`
+      to select the dictionary
+    * Request only the output items to use, and select the columns by name
+      (the columns of web chamame changed, and the previous positions
+      returned the conjugation type as the part of speech,
+      and the lexeme as the base form)
+* Fix `add_sentence_no()`: `cond` is evaluated in the caller's environment
+* Fix `add_depend_ginza()`: remove an unused argument of `add_sentence_no()`
+* Restore `brk` argument of `add_text_id()`
+
 # moranajp 0.9.7
 
 * 2024-07-12

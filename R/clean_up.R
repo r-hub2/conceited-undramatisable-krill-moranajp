@@ -88,7 +88,8 @@ add_depend_ginza <- function(df){
                  unescape_utf("\\u4fc2\\u53d7\\u5143"))
   h_id <- paste0(head, "_id")
   t_dep <- paste0(term, "_dep")
-  if(!s_id %in% colnames(df)) df <- add_sentence_no(df, {{s_id}})
+  # add_sentence_no() adds the column "sentence" (= s_id)
+  if(!s_id %in% colnames(df)) df <- add_sentence_no(df)
 
   df <- 
     df |>
@@ -97,7 +98,7 @@ add_depend_ginza <- function(df){
         "id" := stringr::str_c(.data[[s_id]], "_", .data[["word_no"]]))
   depend <- 
     df |>
-    dplyr::select({{h_id}} := .data[["id"]], {{t_dep}} := .data[[term]])
+    dplyr::select({{h_id}} := dplyr::all_of("id"), {{t_dep}} := dplyr::all_of(term))
   df <- 
     df |>
     dplyr::mutate({{h_id}} := 

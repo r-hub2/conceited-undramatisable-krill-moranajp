@@ -25,7 +25,8 @@ moranajp_all(
   text_col = "text",
   option = "",
   iconv = "",
-  col_lang = "jp"
+  col_lang = "jp",
+  dic = "unidic-spoken"
 )
 
 moranajp(tbl, bin_dir, method, text_col, option = "", iconv = "", col_lang)
@@ -34,7 +35,7 @@ remove_linebreaks(tbl, text_col)
 
 separate_cols_ginza(tbl, col_lang)
 
-make_input(tbl, text_col, iconv, brk = "BPMJP ")
+make_input(tbl, text_col, iconv, brk = "BP")
 
 make_cmd(method, bin_dir, option = "")
 
@@ -83,10 +84,16 @@ iconv is also used to convert input text before running MeCab.
 
 \item{col_lang}{A text. "jp" or "en"}
 
+\item{dic}{A text. Dictionary of web chamame.
+Only used when \code{method = "chamame"}.
+See \code{\link[=web_chamame]{web_chamame()}}.}
+
 \item{brk}{A string of break point}
 }
 \value{
 A tibble.   Output of morphological analysis and added column "text_id".
+\code{NULL} when \code{method = "chamame"} and
+web chamame is not available.
 
 A string
 
@@ -111,13 +118,14 @@ Using 'MeCab' for morphological analysis.
 Keep other colnames in dataframe.
 }
 \examples{
-\donttest{
-  # sample data of Japanese sentences
-  data(neko)
-  neko <-
-      neko |>
-      unescape_utf()
-  # chamame
+# sample data of Japanese sentences
+data(neko)
+neko <-
+    neko |>
+    unescape_utf()
+
+\dontrun{
+  # chamame: need to connect https://chamame.ninjal.ac.jp/ .
   neko |>
     moranajp_all(method = "chamame") |>
         print(n=100)

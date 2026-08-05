@@ -31,6 +31,8 @@ max_sum_str_length(tbl, tmp_group, str_length)
 }
 \value{
 A tibble.   Output of morphological analysis and added column "text_id".
+\code{NULL} when \code{method = "chamame"} and
+web chamame is not available.
 
 A string
 
@@ -55,13 +57,14 @@ Using 'MeCab' for morphological analysis.
 Keep other colnames in dataframe.
 }
 \examples{
-\donttest{
-  # sample data of Japanese sentences
-  data(neko)
-  neko <-
-      neko |>
-      unescape_utf()
-  # chamame
+# sample data of Japanese sentences
+data(neko)
+neko <-
+    neko |>
+    unescape_utf()
+
+\dontrun{
+  # chamame: need to connect https://chamame.ninjal.ac.jp/ .
   neko |>
     moranajp_all(method = "chamame") |>
         print(n=100)

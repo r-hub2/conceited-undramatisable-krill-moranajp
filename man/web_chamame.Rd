@@ -3,13 +3,42 @@
 \name{out_cols_chamame}
 \alias{out_cols_chamame}
 \alias{web_chamame}
+\alias{submit_chamame}
+\alias{select_chamame_fields}
+\alias{chamame_field}
+\alias{cols_chamame}
+\alias{extract_chamame_cols}
+\alias{check_chamame_table}
+\alias{read_html_safely}
+\alias{msg_not_available}
 \alias{html_radio_set}
 \alias{is_radio}
 \title{Morphological analysis for Japanese text by web chamame}
 \usage{
 out_cols_chamame(col_lang = "jp")
 
-web_chamame(text, col_lang = "jp")
+web_chamame(
+  text,
+  col_lang = "jp",
+  dic = "unidic-spoken",
+  url = "https://chamame.ninjal.ac.jp/index.html"
+)
+
+submit_chamame(html, text, col_lang = "jp", dic = "unidic-spoken")
+
+select_chamame_fields(form, dic = "unidic-spoken")
+
+chamame_field(field, item)
+
+cols_chamame()
+
+extract_chamame_cols(tbl, col_lang = "jp")
+
+check_chamame_table(tbl)
+
+read_html_safely(url)
+
+msg_not_available(url, cnd)
 
 html_radio_set(form, ...)
 
@@ -20,7 +49,23 @@ is_radio(fields)
 
 \item{text}{A text.}
 
+\item{dic}{A text. Dictionary of web chamame,
+e.g. "unidic-spoken", "gendai" or "ipadic".
+Use the value of the dictionary checkbox in the form.}
+
+\item{url}{A text. URL to read.}
+
+\item{html}{A xml_document of web chamame.}
+
 \item{form}{vest_form object}
+
+\item{field}{A field in a rvest_form object.}
+
+\item{item}{A string to specify the item of \code{field}.}
+
+\item{tbl}{A dataframe parsed from the response of web chamame.}
+
+\item{cnd}{A try-error object.}
 
 \item{...}{dynamic-dots Name-value pairs giving radio button to modify.}
 
@@ -29,7 +74,23 @@ is_radio(fields)
 \value{
 A character vector
 
+A dataframe, or \code{NULL} when web chamame is not available.
+
 A dataframe
+
+A rvest_form object
+
+A string
+
+A character vector
+
+A dataframe
+
+A dataframe
+
+A xml_document, or \code{NULL} when the resource is not available.
+
+A string
 
 vest_form object
 
@@ -37,13 +98,40 @@ A boolean or vector
 }
 \description{
 Using https://chamame.ninjal.ac.jp/ and rvest.
+Because it uses an internet resource, it fails gracefully:
+when the web service is not available or its response has changed,
+shows a message and returns \code{NULL} instead of an error.
+
+Submits a text to web chamame and parses the response.
+Errors are handled by web_chamame().
+
+Selects the fields by name, NOT by index:
+web chamame sometimes adds fields, which shifts all the indices.
+Errors are handled by web_chamame().
+
+The names of the output items of web chamame,
+in the same order as \code{out_cols_chamame()}.
+Only a few items are requested, so the header row of the result
+corresponds to the cells and the columns can be selected by their names.
+
+Web chamame returns a table even when the analysis failed,
+e.g. a table with an error page of the server.
+The positions of the columns are also checked,
+because they change when web chamame changes its output items.
+Errors are handled by web_chamame().
+
+Helper function to fail gracefully when an internet resource is
+not available, as required by the CRAN repository policy.
 }
 \examples{
+\dontrun{
+  # Need to connect https://chamame.ninjal.ac.jp/ .
 text <-
   paste0("\\\\u3059",
          paste0(rep("\\\\u3082",8),collapse=""),
          "\\\\u306e\\\\u3046\\\\u3061") |>
   unescape_utf()
 web_chamame(text)
+}
 
 }

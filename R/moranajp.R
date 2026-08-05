@@ -22,22 +22,28 @@
 #'                     iconv is also used to convert input text before running MeCab.
 #'                     "CP932_UTF-8": iconv(input, from =  "UTF-8", to = "Shift-JIS")
 #' @param col_lang     A text. "jp" or "en"
+#' @param dic          A text. Dictionary of web chamame.
+#'                     Only used when `method = "chamame"`.
+#'                     See [web_chamame()].
 #' @return A tibble.   Output of morphological analysis and added column "text_id".
+#'                     `NULL` when `method = "chamame"` and
+#'                     web chamame is not available.
 #' @examples
-#' \donttest{
-#'   # sample data of Japanese sentences
-#'   data(neko)
-#'   neko <-
-#'       neko |>
-#'       unescape_utf()
-#'   # chamame
+#' # sample data of Japanese sentences
+#' data(neko)
+#' neko <-
+#'     neko |>
+#'     unescape_utf()
+#'
+#' \dontrun{
+#'   # chamame: need to connect https://chamame.ninjal.ac.jp/ .
 #'   neko |>
 #'     moranajp_all(method = "chamame") |>
 #'         print(n=100)
 #' }
 #' \dontrun{
 #'   # Need to install 'mecab', 'ginza', or 'sudachi' in local PC
-#' 
+#'
 #'   # mecab
 #'   bin_dir <- "d:/pf/mecab/bin"
 #'   iconv <- "CP932_UTF-8"
@@ -62,7 +68,7 @@
 #' @export
 moranajp_all <- function(tbl, bin_dir = "", method = "mecab",
              text_col = "text", option = "", iconv = "",
-             col_lang = "jp"){
+             col_lang = "jp", dic = "unidic-spoken"){
   # text_col = "text"; option = ""; bin_dir = "d:/pf/mecab/bin/"; iconv = "CP932_UTF-8"; method = "mecab"; tbl = review |> unescape_utf(); col_lang = "jp"
   message(paste0("Analaysing by ", method, ". Please wait."))
   text_id    <- "text_id"
@@ -75,7 +81,9 @@ moranajp_all <- function(tbl, bin_dir = "", method = "mecab",
     tbl <-
       tbl |>
         make_input(text_col = text_col, iconv = iconv) |>
-        web_chamame(col_lang = col_lang)
+        web_chamame(col_lang = col_lang, dic = dic)
+    # web_chamame() returns NULL when it is not available
+    if(is.null(tbl)){ return(invisible(NULL)) }
   }else{
     tbl <-
       tbl |>
@@ -160,7 +168,7 @@ separate_cols_ginza <- function(tbl, col_lang){
   xpos <- out_cols_ginza(col_lang)[5]
   tbl <-
     tbl |>
-    tidyr::separate(.data[[xpos]], into = into,
+    tidyr::separate(dplyr::all_of(xpos), into = into,
       sep = "-", fill = "right", extra = "drop", remove = TRUE)
   return(tbl)
 }
@@ -182,10 +190,10 @@ separate_cols_ginza <- function(tbl, col_lang){
 #' @return A string
 #' @export
 make_input <- function(tbl, text_col, iconv,
-  brk = "BPMJP "){ # Break Point Of MoranaJP: need space to split with English words
+  brk = "BP"){ # Break Point of moranajp: need space to split with English words
   input <-
     tbl |>
-    dplyr::select(.data[[text_col]]) |>
+    dplyr::select(dplyr::all_of(text_col)) |>
     unlist() |>
     stringr::str_c(collapse = brk) |>
     stringr::str_c(brk) |>  # NEED brk at the end of input
@@ -329,14 +337,14 @@ out_cols <- function(){
 #' Add id column into result of morphological analysis
 #'
 #' Internal function for moranajp_all().
-#' Add `text_id` column when there is brk ("BPMJP").
-#'    "BPMJP": Break Point Of MoranaJP
+#' Add `text_id` column when there is brk ("BP").
+#'    "BP": Break Point of moranajp
 #'
 #' @inheritParams moranajp_all
 #' @inheritParams make_input
 #' @return A data.frame with column "text_id".
 #' @export
-add_text_id <- function(tbl, method, brk = "BPMJP"){
+add_text_id <- function(tbl, method, brk = "BP"){
   text_id <- "text_id"
   cnames  <- colnames(tbl)
   if (any(text_id %in% cnames)){
@@ -349,14 +357,13 @@ add_text_id <- function(tbl, method, brk = "BPMJP"){
   col <- cnames[col_no]
   # add_group() do not work inside this function
   #   add_group() work on its own.
-  #   tbl <- add_group(tbl, col = col, brk = brk, grp = text_id)
+  # Do NOT lag: brk belongs to the next text, as in add_group(end_with_brk = FALSE).
   tbl <-
     tbl |>
     dplyr::mutate(`:=`({{ text_id }},
-      (.data[[col]] == brk) + 0 )) |>  # "+ 0": boolean to numeric
-    dplyr::mutate(`:=`({{ text_id }},
-      purrr::accumulate(.data[[text_id]], `+`))) |>
-    dplyr::mutate(`:=`({{ text_id }}, .data[[text_id]] + 1))
+                       (.data[[col]] == brk) |>
+                       cumsum() |>
+                       `+`(e1 = _, e2 = 1) ))
   return(tbl)
 }
 
@@ -369,7 +376,7 @@ add_text_id <- function(tbl, method, brk = "BPMJP"){
 #' @inheritParams make_input
 #' @return A data.frame.
 #' @export
-remove_brk <- function(tbl, method, brk = "BPMJP"){
+remove_brk <- function(tbl, method, brk = "BP"){
   cnames  <- colnames(tbl)
   col_no <- ifelse(method == "ginza", 2, 1)
   col <- cnames[col_no]
@@ -387,48 +394,208 @@ remove_brk <- function(tbl, method, brk = "BPMJP"){
 #' Morphological analysis for Japanese text by web chamame
 #'
 #' Using https://chamame.ninjal.ac.jp/ and rvest.
+#' Because it uses an internet resource, it fails gracefully:
+#' when the web service is not available or its response has changed,
+#' shows a message and returns `NULL` instead of an error.
 #'
 #' @param text        A text.
 #' @param col_lang    A text. "jp" or "en"
-#' @return A dataframe
+#' @param dic         A text. Dictionary of web chamame,
+#'                    e.g. "unidic-spoken", "gendai" or "ipadic".
+#'                    Use the value of the dictionary checkbox in the form.
+#' @param url         A text. URL of web chamame.
+#' @return A dataframe, or `NULL` when web chamame is not available.
 #' @examples
+#' \dontrun{
+#'   # Need to connect https://chamame.ninjal.ac.jp/ .
 #' text <-
 #'   paste0("\\u3059",
 #'          paste0(rep("\\u3082",8),collapse=""),
 #'          "\\u306e\\u3046\\u3061") |>
 #'   unescape_utf()
 #' web_chamame(text)
+#' }
 #'
 #' @export
-web_chamame <- function(text, col_lang = "jp"){
-  html <- rvest::read_html("https://chamame.ninjal.ac.jp/index.html")
+web_chamame <- function(text, col_lang = "jp", dic = "unidic-spoken",
+                        url = "https://chamame.ninjal.ac.jp/index.html"){
+  html <- read_html_safely(url)
+  if(is.null(html)){ return(invisible(NULL)) }
+  # Submitting and parsing are also guarded:
+  #   the response of web chamame may have changed.
+  chamame <- try(submit_chamame(html, text, col_lang, dic), silent = TRUE)
+  if(inherits(chamame, "try-error")){
+    message(msg_not_available(url, chamame))
+    return(invisible(NULL))
+  }
+  return(chamame)
+}
+
+#' Helper function for web_chamame
+#'
+#' Submits a text to web chamame and parses the response.
+#' Errors are handled by web_chamame().
+#'
+#' @param html      A xml_document of web chamame.
+#' @return A dataframe
+#' @rdname web_chamame
+submit_chamame <- function(html, text, col_lang = "jp", dic = "unidic-spoken"){
   form <-
     rvest::html_form(html)[[1]] |>
     rvest::html_form_set(st = text) |>
     html_radio_set("out-e" = "html")
-  need_index <-
-    c(1,  # button
-      2,  # textarea
-      5,  # hankaku-zenkaku
-      11, # unidic-spoken
-      25:53, # f1:f28
-      58, # out-e: html
-      62  # submit
-      )
-  del_index <- sort(
-    setdiff(1:62, need_index),
-    decreasing = TRUE)
-  for (i in del_index) {
-      form$fields[[i]] <- NULL
-  }
+  form <- select_chamame_fields(form, dic)
   resp <- rvest::html_form_submit(form)
+  # An error page can be parsed as a table, so check the status first
+  if(resp$status_code >= 400){
+    stop("HTTP status ", resp$status_code, " for the submitted form.")
+  }
   chamame <-
     rvest::read_html(resp) |>
     rvest::html_table() |>
     `[[`(_, 1) |>
-    dplyr::select(3,9:12,4)
+    check_chamame_table() |>
+    extract_chamame_cols(col_lang = col_lang)
+
+  zen_bp <- stringi::stri_trans_general("BP", "halfwidth-fullwidth")
+  chamame[["\u8868\u5c64\u5f62"]] <-
+    stringr::str_replace(chamame[["\u8868\u5c64\u5f62"]], zen_bp, "BP")
+
+  return(chamame)
+}
+
+#' Select the fields to submit to web chamame
+#'
+#' Selects the fields by name, NOT by index:
+#' web chamame sometimes adds fields, which shifts all the indices.
+#' Errors are handled by web_chamame().
+#'
+#' @param form  A rvest_form object of web chamame.
+#' @return A rvest_form object
+#' @rdname web_chamame
+select_chamame_fields <- function(form, dic = "unidic-spoken"){
+  # dic_version: added by web chamame in 2025.
+  #   Without it, web chamame returns a server error for UniDic dictionaries.
+  # Request ONLY the output items to use.
+  #   When many items are requested, the header row of the result
+  #   does not correspond to the cells, and the columns can not be selected.
+  #   f3: part of speech, f3_1:f3_4: its sub categories,
+  #   f12: orthographic base form
+  need_name <-
+    c("hankaku-zenkaku", "dic_version",
+      "f3", "f3_1", "f3_2", "f3_3", "f3_4", "f12")
+  f_name  <- names(form$fields)
+  f_type  <- purrr::map_chr(form$fields, chamame_field, "type")
+  f_value <- purrr::map_chr(form$fields, chamame_field, "value")
+  if(!any(f_value == dic, na.rm = TRUE)){
+    stop("Dictionary '", dic, "' is not in the form of web chamame.")
+  }
+  is_value <- function(x){ !is.na(f_value) & f_value == x }
+  need_index <-
+    which(f_type %in% c("button", "submit", "textarea") |  # submit and input
+          f_name %in% need_name |
+          is_value(dic) |                                  # only one dictionary
+          (f_name == "out-e" & is_value("html")))          # output format
+  del_index <- sort(
+    setdiff(seq_along(form$fields), need_index),
+    decreasing = TRUE)
+  for (i in del_index) {
+      form$fields[[i]] <- NULL
+  }
+  return(form)
+}
+
+#' @param field  A field in a rvest_form object.
+#' @param item   A string to specify the item of `field`.
+#' @return A string
+#' @rdname web_chamame
+chamame_field <- function(field, item){
+  value <- field[[item]]
+  if(length(value) == 0){ return(NA_character_) }
+  paste0(as.character(value), collapse = ",")
+}
+
+#' Columns to use in the result of web chamame
+#'
+#' The names of the output items of web chamame,
+#' in the same order as `out_cols_chamame()`.
+#' Only a few items are requested, so the header row of the result
+#' corresponds to the cells and the columns can be selected by their names.
+#'
+#' @return A character vector
+#' @rdname web_chamame
+cols_chamame <- function(){
+  unescape_utf(
+    c("\\u30ad\\u30fc\\uff08\\uff1d\\u8868\\u5c64\\u5f62\\uff09", # key (= form)
+      "\\u5927\\u5206\\u985e",                                    # major class
+      "\\u4e2d\\u5206\\u985e",                                    # middle class
+      "\\u5c0f\\u5206\\u985e",                                    # minor class
+      "\\u7d30\\u5206\\u985e",                                    # fine class
+      "\\u66f8\\u5b57\\u5f62(\\u57fa\\u672c\\u5f62)"))            # base form
+}
+
+#' Extract the columns to use from the result of web chamame
+#'
+#' @return A dataframe
+#' @rdname web_chamame
+extract_chamame_cols <- function(tbl, col_lang = "jp"){
+  chamame <- dplyr::select(tbl, dplyr::all_of(cols_chamame()))
   colnames(chamame) <- out_cols_chamame(col_lang = col_lang)
   return(chamame)
+}
+
+#' Check the result table of web chamame
+#'
+#' Web chamame returns a table even when the analysis failed,
+#' e.g. a table with an error page of the server.
+#' The positions of the columns are also checked,
+#' because they change when web chamame changes its output items.
+#' Errors are handled by web_chamame().
+#'
+#' @param tbl  A dataframe parsed from the response of web chamame.
+#' @return A dataframe
+#' @rdname web_chamame
+check_chamame_table <- function(tbl){
+  cols <- cols_chamame()
+  key  <- cols[1]  # key (= surface form)
+  # Do NOT return a wrong result silently when the output items changed
+  lack <- setdiff(cols, colnames(tbl))
+  if(length(lack) > 0){
+    stop("The result of web chamame has no column ",
+         paste0("'", lack, "'", collapse = ", "), ".")
+  }
+  err <- stringr::str_detect(tbl[[key]], "Internal Server Error")
+  if(any(err, na.rm = TRUE)){
+    stop("Web chamame returned a server error for the dictionary.")
+  }
+  return(tbl)
+}
+
+#' Read a web page without an error
+#'
+#' Helper function to fail gracefully when an internet resource is
+#' not available, as required by the CRAN repository policy.
+#'
+#' @param url  A text. URL to read.
+#' @return A xml_document, or `NULL` when the resource is not available.
+#' @rdname web_chamame
+read_html_safely <- function(url){
+  html <- try(rvest::read_html(url), silent = TRUE)
+  if(inherits(html, "try-error")){
+    message(msg_not_available(url, html))
+    return(NULL)
+  }
+  return(html)
+}
+
+#' @param cnd  A try-error object.
+#' @return A string
+#' @rdname web_chamame
+msg_not_available <- function(url, cnd){
+  paste0("Could not use the internet resource: ", url, "\n",
+         "  It may not be available or may have changed.\n",
+         "  Returns NULL. Original message: ",
+         stringr::str_trim(as.character(cnd)))
 }
 
 #' Helper function for web_chamame
